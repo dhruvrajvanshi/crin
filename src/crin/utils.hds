@@ -11,16 +11,60 @@ def todo[T](): T {
 }
 
 extension FileExtensions for File {
-    def put(*this, message: *Byte): *File {
-        fputs(message, this)
+    def print[T](*this, message: T): *File where StaticStringable[T] {
+        fputs(StaticStringable[T].to_static_string(message), this)
         return this
     }
 
-    def putln(*this, message: *Byte): *File {
-        this.put(message)
-        this.put(b"\n")
+    def println[T](*this, message: T): *File where StaticStringable[T] {
+        this
+            .print(message)
+            .print(b"\n")
+        return this
+    }
+
+    def printf[T](*this, format_string: *u8, value: T): *File
+        where FPrintf[T]
+    {
+        FPrintf[T].fprintf(this, format_string, value)
         return this
     }
 }
 
+trait FPrintf[Self] {
+    def fprintf(file: *File, format_string: *u8, value: Self): Void
+}
+
+implementation FPrintf[u32] {
+    def fprintf(file: *File, format_string: *u8, value: u32): Void {
+        fprintf_u32(file, format_string, value)
+    }
+}
+
+implementation FPrintf[usize] {
+    def fprintf(file: *File, format_string: *u8, value: usize): Void {
+        fprintf_usize(file, format_string, value)
+    }
+}
+
+implementation FPrintf[u8] {
+    def fprintf(file: *File, format_string: *u8, value: u8): Void {
+        fprintf_u8(file, format_string, value)
+    }
+}
+
 extern def stdout(): *mut File = get_stdout
+extern def fprintf_u32(*File, *u8, u32): Void = fprintf_u32;
+extern def fprintf_usize(*File, *u8, usize): Void = fprintf_usize;
+extern def fprintf_u8(*File, *u8, u8): Void = fprintf_u8;
+
+
+trait StaticStringable[Self] {
+    def to_static_string(self: Self): *u8
+}
+
+implementation StaticStringable[*u8] {
+    def to_static_string(self: *u8): *u8 {
+        return self
+    }
+}

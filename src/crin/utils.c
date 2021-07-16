@@ -1,5 +1,14 @@
 #include <stdio.h>
+#include <stdint.h>
 
-FILE* get_stdout() {
-    return stdout;
+void fprintf_u32(FILE* file, const char* format_string, uint32_t value) {
+    fprintf(file, format_string, value);
+}
+
+void fprintf_usize(FILE* file, const char* format_string, size_t value) {
+    fprintf(file, format_string, value);
+}
+
+void fprintf_u8(FILE* file, const char* format_string, uint8_t value) {
+    fprintf(file, format_string, value);
 }

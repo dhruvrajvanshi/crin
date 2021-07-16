@@ -1,6 +1,6 @@
 import crin.chunk as Chunk
 import crin.chunk.{Chunk}
-import crin.opcode as OpCode
+import crin.opcode.{OpCode}
 
 def main(): u32 {
 
@@ -9,7 +9,9 @@ def main(): u32 {
 
     chunk.init()
 
-    chunk.write(OpCode.RETURN)
+    chunk.write(OpCode.Return().to_byte())
+
+    chunk.disassemble(b"Test Chunk")
 
 
     return 0

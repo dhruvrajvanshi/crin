@@ -2,6 +2,7 @@ import crin.pointer.{}
 import crin.memory.{grow_array, grow_capacity, free_array}
 import crin.utils.{usize, todo}
 import libc.{stdout}
+import crin.opcode.{opcode_from_byte}
 
 struct Chunk {
     val count: usize
@@ -39,9 +40,9 @@ extension ChunkExtensions for Chunk {
     def disassemble(*this, name: *u8): Void {
         val chunk = this
         stdout()
-            .put(b"== ")
-            .put(name)
-            .put(b" ==\n")
+            .print(b"== ")
+            .print(name)
+            .print(b" ==\n")
 
         val mut offset: usize = 0;
         while offset < chunk.count {
@@ -51,5 +52,11 @@ extension ChunkExtensions for Chunk {
 }
 
 def _disassemble_instruction(chunk: *Chunk, offset: usize): usize {
-    return todo()
+    val opcode_byte = chunk.code.load_offset(offset)
+    val opcode = opcode_from_byte(opcode_byte)
+    stdout()
+        .printf(b"%04d ", offset)
+        .println(opcode)
+    
+    return offset + 1 + opcode.arg_size_in_bytes()
 }

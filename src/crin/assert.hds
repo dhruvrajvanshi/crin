@@ -3,6 +3,18 @@ import libc.{exit, fputs, stderr}
 def assert(condition: Bool, message: || -> *Byte): Void {
     if not condition {
         fputs(message(), stderr())
+        fputs(b"\n", stderr())
         exit(1)
     }
+}
+
+def assert_unreachable[T](message: || -> *u8): T {
+    fputs(b"Unreachable assertion reached: ", stderr())
+    fputs(message(), stderr())
+    fputs(b"\n", stderr())
+    exit(1)
+
+    val p: *T = nullptr
+
+    return *p
 }
