@@ -1,0 +1,26 @@
+import libc.{exit, fputs, stderr, File}
+
+type usize = Size
+type isize = Size
+
+def todo[T](): T {
+    fputs(b"todo\n", stderr())
+    exit(1)
+    val ptr: *T = nullptr
+    return *pointer_cast[T](ptr)
+}
+
+extension FileExtensions for File {
+    def put(*this, message: *Byte): *File {
+        fputs(message, this)
+        return this
+    }
+
+    def putln(*this, message: *Byte): *File {
+        this.put(message)
+        this.put(b"\n")
+        return this
+    }
+}
+
+extern def stdout(): *mut File = get_stdout

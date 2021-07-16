@@ -1,0 +1,38 @@
+import crin.utils.{usize}
+import crin.utils.{todo}
+import libc.{free}
+import crin.assert.{assert}
+
+extern def realloc(*mut Void, usize): *mut Void = realloc
+
+def grow_capacity(capacity: usize): usize {
+    if capacity < 8 {
+        return 8
+    } else {
+        return capacity * 2
+    }
+}
+
+def grow_array[T](pointer: *mut T, old_count: usize, new_count: usize): *mut T {
+    return reallocate(pointer, size_of[T] * old_count, size_of[T] * new_count)
+}
+
+def free_array[T](pointer: *mut T, old_count: usize): Void {
+    reallocate(pointer, size_of[T] * old_count, 0)
+}
+
+
+def reallocate[T](pointer: *mut T, size: usize, new_size: usize): *mut T {
+    if new_size == 0 {
+        free(pointer_cast[Void](pointer))
+        return nullptr
+    }
+
+    val result = pointer_cast[T](
+        realloc(pointer_cast[Void](pointer), new_size)
+    )
+
+    assert(result != nullptr) || b"Allocation failure"
+
+    return result
+}

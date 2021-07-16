@@ -1,0 +1,16 @@
+import crin.chunk as Chunk
+import crin.chunk.{Chunk}
+import crin.opcode as OpCode
+
+def main(): u32 {
+
+    val mut _chunk = Chunk(0, 0, nullptr)
+    val chunk = &mut _chunk; defer chunk.free()
+
+    chunk.init()
+
+    chunk.write(OpCode.RETURN)
+
+
+    return 0
+}

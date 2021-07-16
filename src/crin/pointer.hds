@@ -1,0 +1,12 @@
+import hades.memory.{offset, offset_mut}
+import crin.utils.{usize}
+
+extension PointerExtensions[T] for T {
+    def load_offset(*this, index: usize): T {
+        return *offset(this, index)
+    }
+
+    def store_offset(*mut this, index: usize, value: T): Void {
+        *offset_mut(this, index) = value
+    }
+}

@@ -1,0 +1,55 @@
+import crin.pointer.{}
+import crin.memory.{grow_array, grow_capacity, free_array}
+import crin.utils.{usize, todo}
+import libc.{stdout}
+
+struct Chunk {
+    val count: usize
+    val capacity: usize
+    val code: *mut u8
+}
+
+extension ChunkExtensions for Chunk {
+    def write(*mut this, byte: u8): Void {
+        val mut chunk = this
+        if chunk.capacity < chunk.count + 1 {
+            val old_capacity = chunk.capacity
+
+            chunk.capacity = grow_capacity(old_capacity)
+            chunk.code = grow_array(chunk.code, old_capacity, chunk.capacity)
+        }
+
+        chunk.code.store_offset(chunk.count, byte)
+        chunk.count = chunk.count + 1
+    }
+
+    def free(*mut this): Void {
+        val mut chunk = this
+        free_array(chunk.code, chunk.capacity)
+        this.init()
+    }
+
+    def init(*mut this): Void {
+        val mut chunk = this
+        chunk.count = 0
+        chunk.capacity = 0
+        chunk.code = nullptr
+    }
+
+    def disassemble(*this, name: *u8): Void {
+        val chunk = this
+        stdout()
+            .put(b"== ")
+            .put(name)
+            .put(b" ==\n")
+
+        val mut offset: usize = 0;
+        while offset < chunk.count {
+            offset = _disassemble_instruction(chunk, offset)
+        }
+    }
+}
+
+def _disassemble_instruction(chunk: *Chunk, offset: usize): usize {
+    return todo()
+}
