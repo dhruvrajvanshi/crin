@@ -9,7 +9,7 @@ def main(): u32 {
 
     chunk.init()
 
-    chunk.write(OpCode.Return().to_byte())
+    chunk.write(OpCode.Return.to_byte())
 
     chunk.disassemble(b"Test Chunk")
 

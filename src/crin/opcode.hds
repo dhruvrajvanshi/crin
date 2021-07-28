@@ -4,15 +4,15 @@ import crin.assert.{assert_unreachable}
 import libc.{File, stderr}
 
 sealed type OpCode {
-    Return()
+    Return
 }
 
 def opcode_from_byte(byte: u8): OpCode {
     if byte == 0 {
-        return OpCode.Return()
+        return OpCode.Return
     }
 
-    stderr().printf[u8](b"Invalid opcode byte: %d", byte)
+    stderr().printf(b"Invalid opcode byte: %d", byte)
     return assert_unreachable[OpCode] || b""
 }
 
