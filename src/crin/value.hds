@@ -1,0 +1,44 @@
+import crin.utils.{todo, usize}
+import crin.memory.{grow_capacity, grow_array, free_array}
+import crin.pointer.{}
+
+type Value = f64
+
+struct ValueArray {
+    val capacity: usize
+    val count: usize
+    val values: *mut Value
+}
+
+def new_value_array(): ValueArray {
+    return ValueArray(0, 0, nullptr)
+}
+
+extension ValueArrayExtensions for ValueArray {
+    def init(*mut this): Void {
+        val mut self = this
+
+        self.values = nullptr
+        self.capacity = 0
+        self.count = 0
+    }
+
+    def write(*mut this, value: Value): Void {
+        val mut self = this
+        if self.capacity < self.count + 1 {
+            val old_capacity = self.capacity
+            self.capacity = grow_capacity(old_capacity)
+            self.values = grow_array(self.values, old_capacity, self.capacity)
+        }
+
+        self.values.store_offset(self.count, value)
+        self.count = self.count + 1
+    }
+
+    def free(*mut this): Void {
+        val mut array = this
+        free_array(array.values, array.capacity)
+
+        array.init()
+    }
+}

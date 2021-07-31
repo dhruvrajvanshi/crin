@@ -1,15 +1,23 @@
 import crin.chunk as Chunk
-import crin.chunk.{Chunk}
+import crin.chunk.{Chunk, new_chunk}
 import crin.opcode.{OpCode}
 
 def main(): u32 {
 
-    val mut _chunk = Chunk(0, 0, nullptr)
+    val mut _chunk = new_chunk()
     val chunk = &mut _chunk; defer chunk.free()
 
     chunk.init()
 
     chunk.write(OpCode.Return.to_byte())
+
+    chunk.add_constant(3)
+    chunk.add_constant(4)
+    chunk.add_constant(45)
+    chunk.add_constant(2)
+    chunk.add_constant(34)
+    chunk.add_constant(435)
+    chunk.add_constant(3)
 
     chunk.disassemble(b"Test Chunk")
 

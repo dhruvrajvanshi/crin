@@ -3,11 +3,17 @@ import crin.memory.{grow_array, grow_capacity, free_array}
 import crin.utils.{usize, todo}
 import libc.{stdout}
 import crin.opcode.{opcode_from_byte}
+import crin.value.{ValueArray, new_value_array, Value}
 
 struct Chunk {
     val count: usize
     val capacity: usize
     val code: *mut u8
+    val constants: ValueArray
+}
+
+def new_chunk(): Chunk {
+    return Chunk(0, 0, nullptr, new_value_array())
 }
 
 extension ChunkExtensions for Chunk {
@@ -27,6 +33,7 @@ extension ChunkExtensions for Chunk {
     def free(*mut this): Void {
         val mut chunk = this
         free_array(chunk.code, chunk.capacity)
+        (&mut chunk.constants).free()
         this.init()
     }
 
@@ -35,6 +42,8 @@ extension ChunkExtensions for Chunk {
         chunk.count = 0
         chunk.capacity = 0
         chunk.code = nullptr
+
+        (&mut chunk.constants).init()
     }
 
     def disassemble(*this, name: *u8): Void {
@@ -48,6 +57,12 @@ extension ChunkExtensions for Chunk {
         while offset < chunk.count {
             offset = _disassemble_instruction(chunk, offset)
         }
+    }
+
+    def add_constant(*mut this, value: Value): usize {
+        val chunk = this
+        (&mut chunk.constants).write(value)
+        return chunk.constants.count - 1
     }
 }
 
