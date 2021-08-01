@@ -1,6 +1,6 @@
 import crin.pointer.{}
 import crin.memory.{grow_array, grow_capacity, free_array}
-import crin.utils.{usize, todo}
+import crin.utils.{usize, todo, Stream, FPut}
 import libc.{stdout}
 import crin.opcode.{opcode_from_byte}
 import crin.value.{ValueArray, new_value_array, Value}
@@ -10,7 +10,7 @@ struct Chunk {
     val count: usize
     val capacity: usize
     val code: *mut u8
-    val constants: ValueArray
+    val m_constants: ValueArray
 }
 
 def new_chunk(): Chunk {
@@ -18,7 +18,7 @@ def new_chunk(): Chunk {
 }
 
 extension ChunkExtensions for Chunk {
-    def write(*mut this, byte: u8): Void {
+    def write(*mut this, byte: u8): *mut Chunk {
         val mut chunk = this
         if chunk.capacity < chunk.count + 1 {
             val old_capacity = chunk.capacity
@@ -29,12 +29,13 @@ extension ChunkExtensions for Chunk {
 
         chunk.code.store_offset(chunk.count, byte)
         chunk.count = chunk.count + 1
+        return this
     }
 
     def free(*mut this): Void {
         val mut chunk = this
         free_array(chunk.code, chunk.capacity)
-        (&mut chunk.constants).free()
+        (&mut chunk.m_constants).free()
         this.init()
     }
 
@@ -44,47 +45,48 @@ extension ChunkExtensions for Chunk {
         chunk.capacity = 0
         chunk.code = nullptr
 
-        (&mut chunk.constants).init()
-    }
-
-    def disassemble(*this, name: *u8): Void {
-        val chunk = this
-        stdout()
-            .print(b"== ")
-            .print(name)
-            .print(b" ==\n")
-
-        val mut offset: usize = 0;
-        while offset < chunk.count {
-            offset = _disassemble_instruction(chunk, offset)
-        }
+        (&mut chunk.m_constants).init()
     }
 
     def add_constant(*mut this, value: Value): u8 {
         val chunk = this
 
-        assert(chunk.constants.count < 255) || b"Too many constants"
-        (&mut chunk.constants).write(value)
+        assert(chunk.m_constants.count < 255) || b"Too many constants"
+        (&mut chunk.m_constants).write(value)
 
         
-        return (chunk.constants.count - 1) as u8
+        return (chunk.m_constants.count - 1) as u8
+    }
+
+    def constants(*this): *ValueArray {
+        return &this.m_constants
     }
 }
 
-def _disassemble_instruction(chunk: *Chunk, offset: usize): usize {
+implementation FPut[*Chunk] {
+    def fput(chunk: *Chunk, stream: Stream): Void {
+        val mut offset: usize = 0;
+        while offset < chunk.count {
+            offset = _disassemble_instruction(stream, chunk, offset)
+        }
+
+    }
+}
+
+def _disassemble_instruction(stream: Stream, chunk: *Chunk, offset: usize): usize {
     val opcode_byte = chunk.code.load_offset(offset)
     val opcode = opcode_from_byte(opcode_byte)
-    stdout()
+    stream
         .printf(b"%04d ", offset)
         .print(opcode)
 
     when (opcode) {
-        is Return -> stdout().print(b""),
-        is Constant -> stdout()
+        is Return -> stream.print(b""),
+        is Constant -> stream
             .print(b" ")
-            .print(chunk.code.load_offset(offset + 1))
+            .print(chunk.constants().at(chunk.code.load_offset(offset + 1) as usize))
     }
-    stdout().print(b"\n")
+    stream.print(b"\n")
     
     return offset + 1 + opcode.arg_size_in_bytes()
 }

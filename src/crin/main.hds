@@ -1,6 +1,7 @@
 import crin.chunk as Chunk
 import crin.chunk.{Chunk, new_chunk}
 import crin.opcode.{OpCode}
+import crin.utils.{stdout}
 
 def main(): u32 {
 
@@ -13,11 +14,12 @@ def main(): u32 {
 
     val constant = chunk.add_constant(3)
 
-    chunk.write(OpCode.Constant.to_byte())
+    chunk
+        .write(OpCode.Constant.to_byte())
+        .write(constant)
 
-    chunk.write(constant)
-
-    chunk.disassemble(b"Test Chunk")
+    stdout().println(b"Test Chunk")
+    stdout().println(chunk)
 
 
     return 0

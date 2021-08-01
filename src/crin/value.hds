@@ -1,6 +1,7 @@
 import crin.utils.{todo, usize}
 import crin.memory.{grow_capacity, grow_array, free_array}
 import crin.pointer.{}
+import crin.assert.{assert}
 
 type Value = f64
 
@@ -33,6 +34,12 @@ extension ValueArrayExtensions for ValueArray {
 
         self.values.store_offset(self.count, value)
         self.count = self.count + 1
+    }
+
+    def at(*this, offset: usize): Value {
+        assert(offset < this.count) || b"Array out of bounds"
+
+        return this.values.load_offset(offset)
     }
 
     def free(*mut this): Void {

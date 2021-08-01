@@ -1,7 +1,10 @@
 import libc.{exit, fputs, stderr, File}
+import libc as libc
 
 type usize = Size
 type isize = Size
+
+type Stream = *File
 
 def todo[T](): T {
     fputs(b"todo\n", stderr())
@@ -53,11 +56,13 @@ implementation FPrintf[u8] {
     }
 }
 
-extern def stdout(): *mut File = get_stdout
+const stdout = libc.stdout
+const stderr = libc.stderr
+
 extern def fprintf_u32(*File, *u8, u32): Void = fprintf_u32;
 extern def fprintf_usize(*File, *u8, usize): Void = fprintf_usize;
 extern def fprintf_u8(*File, *u8, u8): Void = fprintf_u8;
-
+extern def fprintf_f64(*File, *u8, f64): Void = fprintf_f64;
 
 trait FPut[Self] {
     def fput(self: Self, file: *File): Void
@@ -72,5 +77,11 @@ implementation FPut[*u8] {
 implementation FPut[u8] {
     def fput(self: u8, file: *File): Void {
         fprintf_u8(file, b"%d", self)
+    }
+}
+
+implementation FPut[f64] {
+    def fput(self: f64, file: *File): Void {
+        fprintf_f64(file, b"%lf", self)
     }
 }
