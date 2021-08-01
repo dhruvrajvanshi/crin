@@ -4,6 +4,7 @@ import crin.utils.{usize, todo}
 import libc.{stdout}
 import crin.opcode.{opcode_from_byte}
 import crin.value.{ValueArray, new_value_array, Value}
+import crin.assert.{assert}
 
 struct Chunk {
     val count: usize
@@ -59,10 +60,14 @@ extension ChunkExtensions for Chunk {
         }
     }
 
-    def add_constant(*mut this, value: Value): usize {
+    def add_constant(*mut this, value: Value): u8 {
         val chunk = this
+
+        assert(chunk.constants.count < 255) || b"Too many constants"
         (&mut chunk.constants).write(value)
-        return chunk.constants.count - 1
+
+        
+        return (chunk.constants.count - 1) as u8
     }
 }
 
@@ -71,7 +76,15 @@ def _disassemble_instruction(chunk: *Chunk, offset: usize): usize {
     val opcode = opcode_from_byte(opcode_byte)
     stdout()
         .printf(b"%04d ", offset)
-        .println(opcode)
+        .print(opcode)
+
+    when (opcode) {
+        is Return -> stdout().print(b""),
+        is Constant -> stdout()
+            .print(b" ")
+            .print(chunk.code.load_offset(offset + 1))
+    }
+    stdout().print(b"\n")
     
     return offset + 1 + opcode.arg_size_in_bytes()
 }

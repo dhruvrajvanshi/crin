@@ -1,10 +1,11 @@
-import crin.utils.{StaticStringable}
+import crin.utils.{FPut}
 import crin.utils.{usize}
 import crin.assert.{assert_unreachable}
 import libc.{File, stderr}
 
 sealed type OpCode {
     Return
+    Constant
 }
 
 def opcode_from_byte(byte: u8): OpCode {
@@ -12,28 +13,35 @@ def opcode_from_byte(byte: u8): OpCode {
         return OpCode.Return
     }
 
-    stderr().printf(b"Invalid opcode byte: %d", byte)
+    if byte == 1 {
+        return OpCode.Constant
+    }
+
+    stderr().printf(b"Invalid opcode byte: %d\n", byte)
     return assert_unreachable[OpCode] || b""
 }
 
 extension OpCodeExtensions for OpCode {
     def to_byte(this): u8 {
         return when(this) {
-            is Return -> 0 as u8
+            is Return -> 0 as u8,
+            is Constant -> 1 as u8
         }
     }
 
     def arg_size_in_bytes(this): usize {
         return when(this) {
-            is Return -> 0 as usize
+            is Return -> 0 as usize,
+            is Constant -> 1 as usize
         }
     }
 }
 
-implementation StaticStringable[OpCode] {
-    def to_static_string(self: OpCode): *u8 {
-        return when(self) {
-            is Return -> b"Return"
+implementation FPut[OpCode] {
+    def fput(self: OpCode, file: *File): Void {
+        when(self) {
+            is Return -> file.print(b"Return"),
+            is Constant -> file.print(b"Constant")
         }
     }
 }

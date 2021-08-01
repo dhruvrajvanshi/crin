@@ -11,12 +11,12 @@ def todo[T](): T {
 }
 
 extension FileExtensions for File {
-    def print[T](*this, message: T): *File where StaticStringable[T] {
-        fputs(StaticStringable[T].to_static_string(message), this)
+    def print[T](*this, message: T): *File where FPut[T] {
+        FPut[T].fput(message, this)
         return this
     }
 
-    def println[T](*this, message: T): *File where StaticStringable[T] {
+    def println[T](*this, message: T): *File where FPut[T] {
         this
             .print(message)
             .print(b"\n")
@@ -59,12 +59,18 @@ extern def fprintf_usize(*File, *u8, usize): Void = fprintf_usize;
 extern def fprintf_u8(*File, *u8, u8): Void = fprintf_u8;
 
 
-trait StaticStringable[Self] {
-    def to_static_string(self: Self): *u8
+trait FPut[Self] {
+    def fput(self: Self, file: *File): Void
 }
 
-implementation StaticStringable[*u8] {
-    def to_static_string(self: *u8): *u8 {
-        return self
+implementation FPut[*u8] {
+    def fput(self: *u8, file: *File): Void {
+        fputs(self, file)
+    }
+}
+
+implementation FPut[u8] {
+    def fput(self: u8, file: *File): Void {
+        fprintf_u8(file, b"%d", self)
     }
 }
