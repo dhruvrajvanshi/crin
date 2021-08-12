@@ -1,4 +1,4 @@
-import crin.utils.{todo, usize}
+import crin.utils.{todo}
 import crin.memory.{grow_capacity, grow_array, free_array}
 import crin.pointer.{}
 import crin.assert.{assert}

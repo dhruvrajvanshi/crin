@@ -1,5 +1,4 @@
 import hades.memory.{offset, offset_mut}
-import crin.utils.{usize}
 
 extension PointerExtensions[T] for T {
     def load_offset(*this, index: usize): T {

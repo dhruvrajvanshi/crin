@@ -1,4 +1,3 @@
-import crin.utils.{usize}
 import crin.utils.{todo}
 import libc.{free}
 import crin.assert.{assert}

@@ -1,0 +1,59 @@
+import crin.chunk.{Chunk}
+import crin.utils.{todo}
+import crin.opcode.{ opcode_from_byte }
+import hades.memory.{offset}
+import crin.value.{Value}
+import libc.{stdout}
+
+struct VM {
+    val m_chunk: *Chunk
+    val m_ip: *u8
+}
+
+def new_vm(): VM {
+    return VM(nullptr, nullptr)
+}
+
+extension VMExtensions for VM {
+    def free(*mut this): Void {
+    }
+
+    def interpret(*mut this, chunk: *Chunk): InterpretResult {
+        val mut vm = this
+        vm.m_chunk = chunk
+        vm.m_ip = chunk.code
+        while true {
+            val opcode_byte = this.read_byte()
+            val instruction = opcode_from_byte(opcode_byte)
+            when (instruction) {
+                is Return -> {
+                    return InterpretResult.Ok
+                }
+                is Constant -> {
+                    val constant = this.read_constant()
+                    stdout().println(constant)
+                    {}
+                }
+            }
+
+        }
+        return todo()
+    }
+
+    def read_constant(*mut this): Value {
+        return this.m_chunk.constants().at(this.read_byte() as usize)
+    }
+
+    def read_byte(*mut this): u8 {
+        val mut self = this
+        val byte = *this.m_ip
+        self.m_ip = offset(this.m_ip, 1)
+        return byte
+    }
+}
+
+sealed type InterpretResult {
+    Ok
+    CompileError
+    RuntimeError
+}

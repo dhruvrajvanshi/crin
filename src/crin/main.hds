@@ -2,24 +2,30 @@ import crin.chunk as Chunk
 import crin.chunk.{Chunk, new_chunk}
 import crin.opcode.{OpCode}
 import crin.utils.{stdout}
+import crin.vm.{new_vm, VM}
 
 def main(): u32 {
+
+    val mut _vm =  new_vm()
+    val vm = &mut _vm; defer vm.free()
 
     val mut _chunk = new_chunk()
     val chunk = &mut _chunk; defer chunk.free()
 
     chunk.init()
 
-    chunk.write(OpCode.Return.to_byte())
 
     val constant = chunk.add_constant(3)
 
     chunk
         .write(OpCode.Constant.to_byte())
         .write(constant)
+        .write(OpCode.Return.to_byte())
 
     stdout().println(b"Test Chunk")
-    stdout().println(chunk)
+    stdout().println(&_chunk)
+
+    vm.interpret(chunk)
 
 
     return 0

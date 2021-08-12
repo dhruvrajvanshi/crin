@@ -1,5 +1,4 @@
 import crin.utils.{FPut}
-import crin.utils.{usize}
 import crin.assert.{assert_unreachable}
 import libc.{File, stderr}
 

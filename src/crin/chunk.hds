@@ -1,6 +1,6 @@
 import crin.pointer.{}
 import crin.memory.{grow_array, grow_capacity, free_array}
-import crin.utils.{usize, todo, Stream, FPut}
+import crin.utils.{todo, Stream, FPut}
 import libc.{stdout}
 import crin.opcode.{opcode_from_byte}
 import crin.value.{ValueArray, new_value_array, Value}

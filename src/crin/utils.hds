@@ -1,13 +1,10 @@
 import libc.{exit, fputs, stderr, File}
 import libc as libc
 
-type usize = Size
-type isize = Size
-
 type Stream = *File
 
 def todo[T](): T {
-    fputs(b"todo\n", stderr())
+    fputs(b"panic: Not implemented\n", stderr())
     exit(1)
     val ptr: *T = nullptr
     return *pointer_cast[T](ptr)
@@ -53,6 +50,13 @@ implementation FPrintf[usize] {
 implementation FPrintf[u8] {
     def fprintf(file: *File, format_string: *u8, value: u8): Void {
         fprintf_u8(file, format_string, value)
+    }
+}
+
+
+implementation FPrintf[f64] {
+    def fprintf(file: *File, format_string: *u8, value: f64): Void {
+        fprintf_f64(file, format_string, value)
     }
 }
 
