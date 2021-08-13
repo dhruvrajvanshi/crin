@@ -1,0 +1,32 @@
+import hades.memory as Memory
+struct Array[T] {
+    val m_buffer: *mut T
+    val m_size: usize
+}
+
+def new_array[T](size: usize): Array[T] {
+    val buffer = Memory.allocate[T](size)
+    return Array(buffer, size)
+}
+
+extension ArrayExtensions[T] for Array[T] {
+    def free(*mut this): Void {
+        Memory.free(this.m_buffer)
+    }
+
+    def offset(*this, offset: usize): *T {
+        return Memory.offset(this.m_buffer, offset)
+    }
+
+    def offset_mut(*mut this, offset: usize): *mut T {
+        return Memory.offset_mut(this.m_buffer, offset)
+    }
+
+    def store_offset(*mut this, offset: usize, value: T): Void {
+        *(this.offset_mut(offset)) = value
+    }
+
+    def load_offset(*this, offset: usize): T {
+        return *(this.offset(offset))
+    }
+}

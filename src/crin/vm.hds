@@ -1,21 +1,28 @@
 import crin.chunk.{Chunk}
 import crin.utils.{todo}
 import crin.opcode.{ opcode_from_byte }
-import hades.memory.{offset}
+import hades.memory as Memory
 import crin.value.{Value}
 import libc.{stdout}
+import crin.array.{Array, new_array}
 
 struct VM {
     val m_chunk: *Chunk
     val m_ip: *u8
+    val m_stack: Array[Value]
+    val m_stack_top_index: usize
 }
 
+const STACK_MAX: usize = 256
+
 def new_vm(): VM {
-    return VM(nullptr, nullptr)
+    val mut stack = new_array[Value](STACK_MAX)
+    return VM(nullptr, nullptr, stack, 0)
 }
 
 extension VMExtensions for VM {
     def free(*mut this): Void {
+        (&mut this.m_stack).free()
     }
 
     def interpret(*mut this, chunk: *Chunk): InterpretResult {
@@ -27,11 +34,12 @@ extension VMExtensions for VM {
             val instruction = opcode_from_byte(opcode_byte)
             when (instruction) {
                 is Return -> {
+                    stdout().println(vm.pop())
                     return InterpretResult.Ok
                 }
                 is Constant -> {
                     val constant = this.read_constant()
-                    stdout().println(constant)
+                    vm.push(constant)
                     {}
                 }
             }
@@ -47,8 +55,21 @@ extension VMExtensions for VM {
     def read_byte(*mut this): u8 {
         val mut self = this
         val byte = *this.m_ip
-        self.m_ip = offset(this.m_ip, 1)
+        self.m_ip = Memory.offset(this.m_ip, 1)
         return byte
+    }
+
+    def push(*mut this, value: Value): Void {
+        val mut vm = this
+
+        (&mut vm.m_stack).store_offset(vm.m_stack_top_index, value)
+        vm.m_stack_top_index = vm.m_stack_top_index + 1
+    }
+
+    def pop(*mut this): Value {
+        val mut self = this
+        self.m_stack_top_index = this.m_stack_top_index - 1
+        return (&this.m_stack).load_offset(this.m_stack_top_index)
     }
 }
 
