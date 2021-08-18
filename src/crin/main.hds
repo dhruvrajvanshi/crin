@@ -20,6 +20,7 @@ def main(): u32 {
     chunk
         .write(OpCode.Constant.to_byte())
         .write(constant)
+        .write(OpCode.Negate.to_byte())
         .write(OpCode.Return.to_byte())
 
     stdout().println(b"Test Chunk")

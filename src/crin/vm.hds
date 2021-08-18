@@ -42,6 +42,10 @@ extension VMExtensions for VM {
                     vm.push(constant)
                     {}
                 }
+                is Negate -> {
+                    vm.push(-(vm.pop()))
+                    {}
+                }
             }
 
         }

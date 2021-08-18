@@ -84,7 +84,8 @@ def _disassemble_instruction(stream: Stream, chunk: *Chunk, offset: usize): usiz
         is Return -> stream.print(b""),
         is Constant -> stream
             .print(b" ")
-            .print(chunk.constants().at(chunk.code.load_offset(offset + 1) as usize))
+            .print(chunk.constants().at(chunk.code.load_offset(offset + 1) as usize)),
+        is Negate -> stream.print(b"")
     }
     stream.print(b"\n")
     

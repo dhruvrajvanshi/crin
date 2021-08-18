@@ -5,6 +5,7 @@ import libc.{File, stderr}
 sealed type OpCode {
     Return
     Constant
+    Negate
 }
 
 def opcode_from_byte(byte: u8): OpCode {
@@ -16,6 +17,10 @@ def opcode_from_byte(byte: u8): OpCode {
         return OpCode.Constant
     }
 
+    if byte == 2 {
+        return OpCode.Negate
+    }
+
     stderr().printf(b"Invalid opcode byte: %d\n", byte)
     return assert_unreachable[OpCode] || b""
 }
@@ -23,15 +28,17 @@ def opcode_from_byte(byte: u8): OpCode {
 extension OpCodeExtensions for OpCode {
     def to_byte(this): u8 {
         return when(this) {
-            is Return -> 0 as u8,
-            is Constant -> 1 as u8
+            is Return -> 0,
+            is Constant -> 1,
+            is Negate -> 2
         }
     }
 
     def arg_size_in_bytes(this): usize {
         return when(this) {
-            is Return -> 0 as usize,
-            is Constant -> 1 as usize
+            is Return -> 0,
+            is Constant -> 1,
+            is Negate -> 0
         }
     }
 }
@@ -40,7 +47,8 @@ implementation FPut[OpCode] {
     def fput(self: OpCode, file: *File): Void {
         when(self) {
             is Return -> file.print(b"Return"),
-            is Constant -> file.print(b"Constant")
+            is Constant -> file.print(b"Constant"),
+            is Negate -> file.print(b"Negate")
         }
     }
 }
