@@ -25,6 +25,10 @@ extension VMExtensions for VM {
         (&mut this.m_stack).free()
     }
 
+    def interpret_script(*mut this, source: *u8): InterpretResult {
+        return InterpretResult.CompileError
+    }
+
     def interpret(*mut this, chunk: *Chunk): InterpretResult {
         val mut vm = this
         vm.m_chunk = chunk

@@ -1,4 +1,4 @@
-import libc.{exit, fputs, stderr, File}
+import libc.{exit, fputs, stderr, File, int}
 import libc as libc
 
 type Stream = *File
@@ -78,6 +78,12 @@ implementation FPut[*u8] {
     }
 }
 
+implementation FPut[u32] {
+    def fput(self: u32, file: *File): Void {
+        fprintf_u32(file, b"%d", self);
+    }
+}
+
 implementation FPut[u8] {
     def fput(self: u8, file: *File): Void {
         fprintf_u8(file, b"%d", self)
@@ -89,3 +95,5 @@ implementation FPut[f64] {
         fprintf_f64(file, b"%lf", self)
     }
 }
+
+const SEEK_END: int = 2

@@ -1,8 +1,18 @@
-import libc.{exit, fputs, stderr}
+import libc.{exit, fputs, stderr, strerror, errno}
 
 def assert(condition: Bool, message: || -> *Byte): Void {
     if not condition {
         fputs(message(), stderr())
+        fputs(b"\n", stderr())
+        exit(1)
+    }
+}
+
+def assert_with_errno(condition: Bool, message: || -> *Byte): Void {
+    if not condition {
+        fputs(message(), stderr())
+        fputs(b"\n", stderr())
+        fputs(strerror(errno()), stderr())
         fputs(b"\n", stderr())
         exit(1)
     }

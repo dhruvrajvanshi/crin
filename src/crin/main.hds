@@ -3,31 +3,78 @@ import crin.chunk.{Chunk, new_chunk}
 import crin.opcode.{OpCode}
 import crin.utils.{stdout}
 import crin.vm.{new_vm, VM}
+import crin.assert.{assert, assert_with_errno}
+import hades.memory.{allocate, free}
+import libc.{
+    exit, File, fopen, fseek, ftell,
+    rewind, fclose, fread,
+    ferror, SEEK_END, strcat,
+    stderr
+}
+import crin.pointer.{}
 
-def main(): u32 {
+const USAGE = b"USAGE: crin <FILE>"
+
+def main(argc: u32, argv: **u8): u32 {
+
+    if argc < 2 {
+        stdout().println(USAGE)
+        exit(1)
+    }
+
+    val file_name = argv.load_offset(1)
+    val file = read_file(file_name); defer free(file)
 
     val mut _vm =  new_vm()
     val vm = &mut _vm; defer vm.free()
 
-    val mut _chunk = new_chunk()
-    val chunk = &mut _chunk; defer chunk.free()
+    val result = vm.interpret_script(file)
 
-    chunk.init()
-
-
-    val constant = chunk.add_constant(3)
-
-    chunk
-        .write(OpCode.Constant.to_byte())
-        .write(constant)
-        .write(OpCode.Negate.to_byte())
-        .write(OpCode.Return.to_byte())
-
-    stdout().println(b"Test Chunk")
-    stdout().println(&_chunk)
-
-    vm.interpret(chunk)
+    when (result) {
+        is Ok -> {}
+        is CompileError -> {
+            stderr().println(b"Compilation error")
+            exit(1)
+        }
+        is RuntimeError -> {
+            stderr().println(b"Runtime error")
+            exit(1)
+        }
+    }
 
 
     return 0
+}
+
+def read_file(path: *u8): *mut u8 {
+    val file = fopen(path, b"rb")
+    assert_with_errno(file != nullptr) || strcat(b"Couldn't open file: ", path)
+
+    val seek_result = fseek(file, 0, SEEK_END)
+    assert_with_errno(seek_result == 0) || b"Couldn't seek file"
+
+    val file_size = ftell(file)
+    assert_with_errno(file_size >= 0) || b"Couldn't check file size"
+    rewind(file)
+
+    val buffer = allocate[u8](file_size + 1)
+    assert(buffer != nullptr) || b"Out of memory"
+
+    val bytes_read = fread(
+        pointer_cast[Void](buffer),
+        size_of[u8],
+        file_size as usize,
+        file
+    )
+    assert_with_errno(
+        ferror(file) == 0
+    ) || b"Couldn't read file"
+
+    buffer.store_offset(bytes_read, 0 as u8)
+
+    assert_with_errno(
+        fclose(file) == 0
+    ) || b"Couldn't close file"
+
+    return buffer
 }
