@@ -5,6 +5,7 @@ import hades.memory as Memory
 import crin.value.{Value}
 import libc.{stdout}
 import crin.array.{Array, new_array}
+import crin.compiler.{compile}
 
 struct VM {
     val m_chunk: *Chunk
@@ -26,6 +27,7 @@ extension VMExtensions for VM {
     }
 
     def interpret_script(*mut this, source: *u8): InterpretResult {
+        compile(source) 
         return InterpretResult.CompileError
     }
 

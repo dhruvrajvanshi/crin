@@ -1,0 +1,71 @@
+import crin.utils.{todo}
+import libc.{strlen}
+
+struct Scanner {
+    val start: *u8
+    val current: *u8
+    val line: u32
+}
+
+sealed type TokenType {
+    LEFT_PAREN; RIGHT_PAREN;
+    LEFT_BRACE; RIGHT_BRACE;
+    COMMA; DOT; MINUS; PLUS;
+    SEMICOLON; SLASH; STAR;
+
+    // One or two character tokens
+    BANG; BANG_EQUAL;
+    EQUAL; EQUAL_EQUAL;
+
+    ERROR; EOF;
+}
+
+struct Token {
+    val ty: TokenType
+    val start: *u8
+    val length: u32
+    val line: u32
+}
+
+extension ScannerExtensions for Scanner {
+    def scan_token(*mut this): Token {
+        val mut scanner = this
+
+        scanner.start = scanner.current
+
+        if scanner._is_at_end() {
+            return scanner._make_token(TokenType.EOF)
+        }
+
+        return scanner._error_token(b"Unexpected character.")
+    }
+}
+
+extension PrivateScannerExtensions for Scanner {
+    def _is_at_end(*this): Bool {
+        val self = this
+        return self.current == 0
+    }
+
+    def _make_token(*this, ty: TokenType): Token {
+        val length = (@intrinsic.ptr_to_int(this.current) -
+                @intrinsic.ptr_to_int(this.start)) as u32
+        return Token(
+            ty,
+            this.start,
+            length,
+            this.line
+        )
+    }
+
+    def _error_token(*this, message: *u8): Token {
+        return Token(
+            TokenType.ERROR,
+            message,
+            strlen(message) as u32,
+            this.line
+        )
+    }
+
+}
+

@@ -1,0 +1,24 @@
+import crin.scanner.{Scanner}
+def compile(source: *u8): Void {
+    val mut _scanner = Scanner(source, source, 1)
+    val scanner = &mut _scanner
+
+    val mut line: u32 = 0
+
+    val mut _break = false
+    while not _break {
+        val token = scanner.scan_token()
+        if token.line != line {
+            line = token.line
+        }
+
+        when (token.ty) {
+            is EOF -> {
+                _break = true
+            }
+            else -> {}
+        }
+        
+    }
+
+}
